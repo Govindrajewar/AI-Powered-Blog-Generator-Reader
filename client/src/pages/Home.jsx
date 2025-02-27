@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import BlogCard from "../components/BlogCard";
 import SearchBar from "../components/SearchBar";
+import { Container, Grid, Typography } from "@mui/material";
 
 const Home = () => {
   const [blogs, setBlogs] = useState([]);
@@ -16,19 +17,25 @@ const Home = () => {
   );
 
   return (
-    <div className="max-w-3xl mx-auto mt-10">
-      <h1 className="text-3xl font-bold text-center">AI Blog Generator</h1>
+    <Container maxWidth="lg" className="mt-10">
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        textAlign="center"
+        gutterBottom
+      >
+        AI Blog Generator
+      </Typography>
+      <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-      <div className="mt-5">
-        <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      </div>
-
-      <div className="mt-5 space-y-4">
+      <Grid container spacing={3}>
         {filteredBlogs.map((blog) => (
-          <BlogCard key={blog._id} blog={blog} />
+          <Grid item xs={12} sm={6} md={4} key={blog._id}>
+            <BlogCard blog={blog} />
+          </Grid>
         ))}
-      </div>
-    </div>
+      </Grid>
+    </Container>
   );
 };
 

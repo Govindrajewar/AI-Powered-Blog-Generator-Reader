@@ -1,58 +1,73 @@
 const express = require("express");
-const dotenv = require("dotenv");
 const cors = require("cors");
-const mongoose = require("mongoose");
-const OpenAI = require("openai");
 
-dotenv.config();
 const app = express();
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+let blogs = [
+  {
+    _id: "1",
+    title: "Understanding React Hooks",
+    content:
+      "React Hooks allow you to use state and lifecycle features without writing a class...",
+  },
+  {
+    _id: "2",
+    title: "Getting Started with Node.js",
+    content:
+      "Node.js is a powerful JavaScript runtime built on Chrome's V8 engine...",
+  },
+  {
+    _id: "3",
+    title: "Mastering Tailwind CSS",
+    content:
+      "Tailwind CSS is a utility-first CSS framework for rapid UI development...",
+  },
+];
 
-// Blog Schema
-const BlogSchema = new mongoose.Schema({ title: String, content: String });
-const Blog = mongoose.model("Blog", BlogSchema);
-
-// OpenAI Setup
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-// Generate Blog Post
-app.post("/generate", async (req, res) => {
-  try {
-    const { topic } = req.body;
-    const response = await openai.completions.create({
-      model: "text-davinci-003",
-      prompt: `Write a blog post about ${topic}`,
-      max_tokens: 500,
-    });
-
-    const newBlog = new Blog({
-      title: topic,
-      content: response.choices[0].text,
-    });
-    await newBlog.save();
-    res.json(newBlog);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get All Blogs
-app.get("/blogs", async (req, res) => {
-  const blogs = await Blog.find();
+// 📌 API: Get all blog posts
+app.get("/blogs", (req, res) => {
   res.json(blogs);
 });
 
-// Default Homepage
-app.get("/", (req, res) => {
-  res.json({ message: "Home page for AI-Powered Blog Generator & Reader" });
+// 📌 API: Get a single blog post by ID
+app.get("/blogs/:id", (req, res) => {
+  const blog = blogs.find((b) => b._id === req.params.id);
+  if (!blog) return res.status(404).json({ message: "Blog not found" });
+  res.json(blog);
 });
 
-// Start Server
-app.listen(4000, () => console.log("Server running on port 4000"));
+// 📌 API: Generate a blog post (Mocked Response)
+app.post("/generate-blog", (req, res) => {
+  const { topic } = req.body;
+
+  if (!topic) {
+    return res.status(400).json({ message: "Topic is required" });
+  }
+
+  const generatedBlog = {
+    _id: (blogs.length + 1).toString(),
+    title: `AI-Generated Blog on ${topic}`,
+    content: `This is a mock-generated blog post about ${topic}. AI-generated content goes here...`,
+  };
+
+  blogs.unshift(generatedBlog); // Add to the beginning of the list
+  res.status(201).json(generatedBlog);
+});
+
+// 📌 API: Delete a blog post
+app.delete("/blogs/:id", (req, res) => {
+  const blogIndex = blogs.findIndex((b) => b._id === req.params.id);
+  if (blogIndex === -1)
+    return res.status(404).json({ message: "Blog not found" });
+
+  blogs.splice(blogIndex, 1);
+  res.json({ message: "Blog deleted successfully" });
+});
+
+// Start the server
+const PORT = 5000;
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);

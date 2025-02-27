@@ -1,5 +1,6 @@
-import { motion } from "framer-motion";
+import { Card, CardContent, Typography, Button } from "@mui/material";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const BlogCard = ({ blog }) => {
   return (
@@ -8,15 +9,25 @@ const BlogCard = ({ blog }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Link to={`/blog/${blog._id}`} className="block">
-        <div className="bg-white shadow-md rounded-lg p-5 hover:shadow-lg transition duration-300">
-          <h2 className="text-xl font-bold">{blog.title}</h2>
-          <p className="text-gray-600 mt-2">
+      <Card className="shadow-lg hover:shadow-xl transition duration-300">
+        <CardContent>
+          <Typography variant="h5" fontWeight="bold">
+            {blog.title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" className="mt-2">
             {blog.content.substring(0, 150)}...
-          </p>
-          <p className="text-blue-500 mt-2">Read More →</p>
-        </div>
-      </Link>
+          </Typography>
+          <Button
+            component={Link}
+            to={`/blog/${blog._id}`}
+            variant="contained"
+            color="primary"
+            className="mt-3"
+          >
+            Read More
+          </Button>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 };

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { Container, Typography, CircularProgress } from "@mui/material";
 
 const BlogPage = () => {
   const { id } = useParams();
@@ -13,13 +14,24 @@ const BlogPage = () => {
     });
   }, [id]);
 
-  if (!blog) return <div className="text-center mt-10">Loading...</div>;
+  if (!blog) return <CircularProgress className="mt-10 mx-auto block" />;
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-5 bg-white shadow-lg rounded-lg">
-      <h1 className="text-3xl font-bold">{blog.title}</h1>
-      <p className="text-gray-700 mt-4">{blog.content}</p>
-    </div>
+    <Container
+      maxWidth="md"
+      className="mt-10 p-5 bg-white shadow-lg rounded-lg"
+    >
+      <Typography variant="h3" fontWeight="bold" gutterBottom>
+        {blog.title}
+      </Typography>
+      <Typography
+        variant="body1"
+        color="text.primary"
+        className="mt-4 leading-relaxed"
+      >
+        {blog.content}
+      </Typography>
+    </Container>
   );
 };
 
