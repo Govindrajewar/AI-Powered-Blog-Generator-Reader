@@ -1,62 +1,87 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-let blogs = [
-  {
-    _id: "1",
-    title: "Understanding React Hooks",
-    content:
-      "React Hooks allow you to use state and lifecycle features without writing a class...",
-  },
-  {
-    _id: "2",
-    title: "Getting Started with Node.js",
-    content:
-      "Node.js is a powerful JavaScript runtime built on Chrome's V8 engine...",
-  },
-  {
-    _id: "3",
-    title: "Mastering Tailwind CSS",
-    content:
-      "Tailwind CSS is a utility-first CSS framework for rapid UI development...",
-  },
-];
+let blogs = [];
 
-// 📌 API: Get all blog posts
-app.get("/blogs", (req, res) => {
-  res.json(blogs);
+// Use dynamic import for `node-fetch`
+const fetch = (...args) =>
+  import("node-fetch").then(({ default: fetch }) => fetch(...args));
+
+// ✅ **Improved AI Blog Generation using Cohere**
+const generateBlogContent = async (topic) => {
+  const API_URL = "https://api.cohere.ai/v1/generate";
+  const headers = {
+    Authorization: `Bearer ${process.env.COHERE_API_KEY}`, // Secure API Key
+    "Content-Type": "application/json",
+  };
+
+  const body = JSON.stringify({
+    model: "command-r", // Free AI model for blog generation
+    prompt: `Write a detailed, informative blog post about "${topic}". Include an introduction, several paragraphs explaining key concepts, examples, and a conclusion. Make it engaging and human-like.`,
+    max_tokens: 700, // Increased token size for better output
+  });
+
+  try {
+    const response = await fetch(API_URL, { method: "POST", headers, body });
+    const data = await response.json();
+
+    // Check if we received the expected data
+    if (data?.generations?.length > 0) {
+      return data.generations[0].text.trim();
+    } else {
+      return `A blog on "${topic}". (AI response issue)`;
+    }
+  } catch (error) {
+    console.error("AI API Error:", error);
+    return `Failed to generate a blog on "${topic}". Please try again later.`;
+  }
+};
+
+// CREATE - Generate and store a new blog
+app.post("/generate-blog", async (req, res) => {
+  const { topic } = req.body;
+  if (!topic) return res.status(400).json({ message: "Topic is required" });
+
+  const content = await generateBlogContent(topic);
+  const newBlog = {
+    _id: uuidv4(),
+    title: `Blog on ${topic}`,
+    content,
+  };
+
+  blogs.unshift(newBlog);
+  res.status(201).json(newBlog);
 });
 
-// 📌 API: Get a single blog post by ID
+// READ - Fetch all blogs
+app.get("/blogs", (req, res) => res.json(blogs));
+
+// READ - Fetch a single blog by ID
 app.get("/blogs/:id", (req, res) => {
   const blog = blogs.find((b) => b._id === req.params.id);
   if (!blog) return res.status(404).json({ message: "Blog not found" });
   res.json(blog);
 });
 
-// 📌 API: Generate a blog post (Mocked Response)
-app.post("/generate-blog", (req, res) => {
-  const { topic } = req.body;
+// UPDATE - Edit a blog by ID
+app.put("/blogs/:id", (req, res) => {
+  const { title, content } = req.body;
+  const blogIndex = blogs.findIndex((b) => b._id === req.params.id);
 
-  if (!topic) {
-    return res.status(400).json({ message: "Topic is required" });
-  }
+  if (blogIndex === -1)
+    return res.status(404).json({ message: "Blog not found" });
 
-  const generatedBlog = {
-    _id: (blogs.length + 1).toString(),
-    title: `AI-Generated Blog on ${topic}`,
-    content: `This is a mock-generated blog post about ${topic}. AI-generated content goes here...`,
-  };
-
-  blogs.unshift(generatedBlog); // Add to the beginning of the list
-  res.status(201).json(generatedBlog);
+  blogs[blogIndex] = { ...blogs[blogIndex], title, content };
+  res.json(blogs[blogIndex]);
 });
 
-// 📌 API: Delete a blog post
+// DELETE - Remove a blog by ID
 app.delete("/blogs/:id", (req, res) => {
   const blogIndex = blogs.findIndex((b) => b._id === req.params.id);
   if (blogIndex === -1)
@@ -66,8 +91,7 @@ app.delete("/blogs/:id", (req, res) => {
   res.json({ message: "Blog deleted successfully" });
 });
 
-// Start the server
-const PORT = 5000;
-app.listen(PORT, () =>
-  console.log(`🚀 Server running on http://localhost:${PORT}`)
+// Start server
+app.listen(5000, () =>
+  console.log(`🚀 Server running on http://localhost:5000`)
 );
