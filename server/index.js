@@ -91,6 +91,10 @@ app.delete("/blogs/:id", (req, res) => {
   res.json({ message: "Blog deleted successfully" });
 });
 
+app.get("/", (req, res) =>
+  res.json({ message: "AI-Powered-Blog-Generator-Reader Server Home Page" })
+);
+
 // Start server
 app.listen(5000, () =>
   console.log(`🚀 Server running on http://localhost:5000`)
