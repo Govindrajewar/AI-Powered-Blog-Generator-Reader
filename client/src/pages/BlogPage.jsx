@@ -8,7 +8,7 @@ const BlogPage = () => {
   const [blog, setBlog] = useState(null);
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/blogs`).then((res) => {
+    axios.get(`https://ai-blog-generator-server.onrender.com/blogs`).then((res) => {
       const foundBlog = res.data.find((b) => b._id === id);
       setBlog(foundBlog);
     });

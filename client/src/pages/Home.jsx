@@ -14,13 +14,13 @@ const Home = () => {
   }, []);
 
   const fetchBlogs = () => {
-    axios.get("http://localhost:5000/blogs").then((res) => setBlogs(res.data));
+    axios.get("https://ai-blog-generator-server.onrender.com/blogs").then((res) => setBlogs(res.data));
   };
 
   const generateBlog = () => {
     if (!newTopic.trim()) return;
     axios
-      .post("http://localhost:5000/generate-blog", { topic: newTopic })
+      .post("https://ai-blog-generator-server.onrender.com/generate-blog", { topic: newTopic })
       .then(() => {
         setNewTopic(""); // Clear input field
         fetchBlogs(); // Refresh blogs

@@ -97,5 +97,5 @@ app.get("/", (req, res) =>
 
 // Start server
 app.listen(5000, () =>
-  console.log(`🚀 Server running on http://localhost:5000`)
+  console.log(`🚀 Server running on https://ai-blog-generator-server.onrender.com`)
 );
